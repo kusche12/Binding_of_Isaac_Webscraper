@@ -37,7 +37,6 @@ async function scrapeItem(itemNames) {
                 let el = document.querySelector('.noarticletext');
                 return el;
             });
-
             if (isEmpty(notAnItem)) break;
 
             // Get and clean the item header
