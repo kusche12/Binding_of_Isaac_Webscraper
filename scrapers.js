@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const BASE_URL = 'https://bindingofisaacrebirth.fandom.com/wiki/';
+const { cleanText, isEmpty } = require('./functions.js');
 
 // Scrape the items page to get the names of all items that appear in the row
 // returns an arrray of item names
@@ -31,17 +32,27 @@ async function scrapeItem(itemNames) {
 
             await page.goto(BASE_URL + itemNames[i].replace(" ", "_"));
 
+            // Check to see if this item page exists. If not, then iterate next
+            let notAnItem = await page.evaluate(() => {
+                let el = document.querySelector('.noarticletext');
+                return el;
+            });
+
+            if (isEmpty(notAnItem)) break;
+
             // Get and clean the item header
-            // const [el] = await page.$x('//*[@id="firstHeading"]');
-            // const txt = await el.getProperty('textContent');
-            // const firstHeading = await txt.jsonValue();
-            // const firstHeadingClean = firstHeading.replace(/\n/g, '').replace(/\t/g, '').replace(/\r/g, '').replace(/\s\s+/g, ' ').trim();
+            const [el] = await page.$x('//*[@id="firstHeading"]');
+            const txt = await el.getProperty('textContent');
+            const firstHeading = await txt.jsonValue();
+            const firstHeadingClean = cleanText(firstHeading);
 
             // Get and clean the item trivia
             const [el2] = await page.$x('//*[@id="mw-content-text"]/div/ul[5]');
             const triviaList = await el2.$x("li");
             for (let line of triviaList) {
-                console.log(await page.evaluate(el => el.innerHTML, line));
+                const lineTxt = await page.evaluate(el => el.innerHTML, line);
+                const lineTxtClean = cleanText(lineTxt)
+                console.log(lineTxtClean);
             }
         }
     }
