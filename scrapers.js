@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer');
 const BASE_URL = 'https://bindingofisaacrebirth.fandom.com/wiki/';
-const Item = require('./models/item');
 const { cleanText, isEmpty } = require('./functions.js');
 
 // Scrape the items page to get the names of all items that appear in the row
@@ -66,23 +65,6 @@ async function scrapeItem(itemNames) {
                     triviaListArray.push(lineTxtClean);
                 }
             }
-
-            // Create the Mongoose Item Object
-            const item = new Item({
-                title: itemNames[i],
-                trivia: triviaListArray,
-                isActive: isActiveBool
-            });
-
-            console.log(item);
-
-            item.save()
-                .then((result) => {
-                    console.log('item saved')
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
         }
     }
 
@@ -90,20 +72,13 @@ async function scrapeItem(itemNames) {
 }
 
 async function deleteAllItems() {
-    await Item.deleteMany({}, (err) => {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('All items deleted');
-        }
-    });
-
+    console.log('delete all items');
 }
 
 async function main() {
     const itemNames = await scrapeItemPage(BASE_URL + 'Items');
-    await scrapeItem(itemNames);
-    // await scrapeItem(['Box of Spiders']);
+    // await scrapeItem(itemNames);
+    await scrapeItem(['Box of Spiders']);
     // await scrapeItem(['Ball of Bandages']);
 }
 
