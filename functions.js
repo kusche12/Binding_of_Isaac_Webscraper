@@ -1,6 +1,6 @@
 // remove all html tags from a string
 function cleanText(str) {
-    return str.replace(/<\/?[^>]+>/gi, '').replace(/\n/g, '').replace(/\t/g, '').replace(/\r/g, '').replace(/\s\s+/g, ' ').trim();
+    return str.replace(/<\/?[^>]+>/gi, '').replace(/\n/g, '').replace(/\t/g, '').replace(/\r/g, '').replace(/\s\s+/g, ' ').replace(/&amp;/g, '&').trim();
 }
 
 function isEmpty(obj) {

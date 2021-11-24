@@ -48,26 +48,37 @@ async function scrapeItem(itemNames) {
             if (isActiveClean.includes('passive')) isActiveBool = false;
 
             // Get and clean the item trivia
-            const [el2] = await page.$x('//*[@id="mw-content-text"]/div/ul[5]');
-            const triviaList = await el2.$x("li");
             let triviaListArray = [];
-            for (let line of triviaList) {
-                const lineTxt = await page.evaluate(el => el.innerHTML, line);
-                const lineTxtClean = cleanText(lineTxt)
-                triviaListArray.push(lineTxtClean);
+            const [el2] = await page.$x('//*[@id="mw-content-text"]/div/ul[5]');
+
+            // If there is no list of trivia, then it is a paragraph. Grab that instead
+            if (el2 === undefined) {
+                const [el3] = await page.$x('//*[@id="mw-content-text"]/div[1]/p[4]');
+                const txt3 = await el3.getProperty('textContent');
+                const txt3JSON = await txt3.jsonValue();
+                const txt3Clean = cleanText(txt3JSON);
+                triviaListArray.push(txt3Clean);
+            } else {
+                const triviaList = await el2.$x("li");
+                for (let line of triviaList) {
+                    const lineTxt = await page.evaluate(el => el.innerHTML, line);
+                    const lineTxtClean = cleanText(lineTxt)
+                    triviaListArray.push(lineTxtClean);
+                }
             }
 
             // Create the Mongoose Item Object
             const item = new Item({
-                title: itemNames[0],
+                title: itemNames[i],
                 trivia: triviaListArray,
                 isActive: isActiveBool
             });
 
+            console.log(item);
+
             item.save()
                 .then((result) => {
                     console.log('item saved')
-                    console.log(result);
                 })
                 .catch((err) => {
                     console.log(err);
@@ -78,13 +89,22 @@ async function scrapeItem(itemNames) {
     browser.close();
 }
 
+async function deleteAllItems() {
+    await Item.deleteMany({}, (err) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('All items deleted');
+        }
+    });
+
+}
+
 async function main() {
-    // const itemNames = await scrapeItemPage(BASE_URL + 'Items');
-    // await scrapeItem(itemNames);
-    await scrapeItem(['A Pony']);
+    const itemNames = await scrapeItemPage(BASE_URL + 'Items');
+    await scrapeItem(itemNames);
+    // await scrapeItem(['Box of Spiders']);
     // await scrapeItem(['Ball of Bandages']);
 }
 
-// main();
-
-module.exports = { main };
+module.exports = { main, deleteAllItems };
