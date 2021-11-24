@@ -29,7 +29,6 @@ async function scrapeItem(itemNames) {
     for (let i = 0; i < itemNames.length; i++) {
         if (itemNames[i]) {
             console.log('Going to page ' + itemNames[i]);
-
             await page.goto(BASE_URL + itemNames[i].replace(" ", "_"));
 
             // Check to see if this item page exists. If not, then iterate next
@@ -39,11 +38,18 @@ async function scrapeItem(itemNames) {
             });
             if (isEmpty(notAnItem)) break;
 
-            // Get and clean the item header
-            const [el] = await page.$x('//*[@id="firstHeading"]');
+            // Scrape and clean to check if the item is active or passive
+            const [el] = await page.$x('/html/body/div[4]/div[3]/div[4]/main/div[3]/div/div/p[3]');
             const txt = await el.getProperty('textContent');
-            const firstHeading = await txt.jsonValue();
-            const firstHeadingClean = cleanText(firstHeading);
+            const isActive = await txt.jsonValue();
+            console.log(isActive);
+            const isActiveClean = cleanText(isActive);
+            console.log(isActiveClean);
+
+            // const [el] = await page.$x('//*[@id="firstHeading"]');
+            // const txt = await el.getProperty('textContent');
+            // const firstHeading = await txt.jsonValue();
+            // const firstHeadingClean = cleanText(firstHeading);
 
             // Get and clean the item trivia
             const [el2] = await page.$x('//*[@id="mw-content-text"]/div/ul[5]');
@@ -65,4 +71,4 @@ async function main() {
     await scrapeItem(['A Pony']);
 }
 
-main();
+// module.exports = { main };
