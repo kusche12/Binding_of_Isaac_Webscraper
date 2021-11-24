@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const BASE_URL = 'https://bindingofisaacrebirth.fandom.com/wiki/';
+const Item = require('./models/item');
 const { cleanText, isEmpty } = require('./functions.js');
 
 // Scrape the items page to get the names of all items that appear in the row
@@ -39,26 +40,38 @@ async function scrapeItem(itemNames) {
             if (isEmpty(notAnItem)) break;
 
             // Scrape and clean to check if the item is active or passive
-            const [el] = await page.$x('/html/body/div[4]/div[3]/div[4]/main/div[3]/div/div/p[3]');
+            const [el] = await page.$x('//*[@id="mw-content-text"]/div/p[3]');
             const txt = await el.getProperty('textContent');
             const isActive = await txt.jsonValue();
-            console.log(isActive);
             const isActiveClean = cleanText(isActive);
-            console.log(isActiveClean);
-
-            // const [el] = await page.$x('//*[@id="firstHeading"]');
-            // const txt = await el.getProperty('textContent');
-            // const firstHeading = await txt.jsonValue();
-            // const firstHeadingClean = cleanText(firstHeading);
+            let isActiveBool = true;
+            if (isActiveClean.includes('passive')) isActiveBool = false;
 
             // Get and clean the item trivia
             const [el2] = await page.$x('//*[@id="mw-content-text"]/div/ul[5]');
             const triviaList = await el2.$x("li");
+            let triviaListArray = [];
             for (let line of triviaList) {
                 const lineTxt = await page.evaluate(el => el.innerHTML, line);
                 const lineTxtClean = cleanText(lineTxt)
-                console.log(lineTxtClean);
+                triviaListArray.push(lineTxtClean);
             }
+
+            // Create the Mongoose Item Object
+            const item = new Item({
+                title: itemNames[0],
+                trivia: triviaListArray,
+                isActive: isActiveBool
+            });
+
+            item.save()
+                .then((result) => {
+                    console.log('item saved')
+                    console.log(result);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         }
     }
 
@@ -69,6 +82,9 @@ async function main() {
     // const itemNames = await scrapeItemPage(BASE_URL + 'Items');
     // await scrapeItem(itemNames);
     await scrapeItem(['A Pony']);
+    // await scrapeItem(['Ball of Bandages']);
 }
 
-// module.exports = { main };
+// main();
+
+module.exports = { main };

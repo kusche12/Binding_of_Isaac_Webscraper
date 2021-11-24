@@ -1,6 +1,9 @@
 // TODO:
-// Scrape the isActivated variable for the item
-// Add the title, activated, and trivia to a mongoose object: https://www.youtube.com/watch?v=gtUPPO8Re98
+// Scrape more data for each item
+// Run more items in the scraper
+
+// FYI:
+// Run the app with `nodemon app.js` and navigate to /boi-scraper
 
 const express = require('express');
 const mongoose = require('mongoose');

@@ -6,7 +6,7 @@ const itemSchema = new Schema({
         type: String,
         required: true
     },
-    isActivated: {
+    isActive: {
         type: Boolean,
         required: true
     },
